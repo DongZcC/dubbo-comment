@@ -26,6 +26,7 @@ import com.alibaba.dubbo.common.extension.SPI;
 public class SpiExtensionFactory implements ExtensionFactory {
 
     public <T> T getExtension(Class<T> type, String name) {
+        // 如果是接口类型, 并且标记有SPI 注解
         if (type.isInterface() && type.isAnnotationPresent(SPI.class)) {
             ExtensionLoader<T> loader = ExtensionLoader.getExtensionLoader(type);
             if (loader.getSupportedExtensions().size() > 0) {

@@ -168,6 +168,9 @@ public class ZookeeperRegistry extends FailbackRegistry {
                     if (zkListener == null) {
                         listeners.putIfAbsent(listener, new ChildListener() {
                             public void childChanged(String parentPath, List<String> currentChilds) {
+                                // 客户端收到推送信息 ， 在路由规则设置的时候推送了两条
+                                // 一条是currentChilds 为空， 一条为正常推送
+                                // 推送结束后，Registry刷新 提供者,configurator,router等配置
                                 ZookeeperRegistry.this.notify(url, listener, toUrlsWithEmpty(url, parentPath, currentChilds));
                             }
                         });

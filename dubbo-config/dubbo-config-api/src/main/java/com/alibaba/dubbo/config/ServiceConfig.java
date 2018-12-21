@@ -192,6 +192,10 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         return unexported;
     }
 
+
+    /**
+     * 服务导出关键方法.
+     */
     public synchronized void export() {
         if (provider != null) {
             if (export == null) {
@@ -227,6 +231,8 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         if (interfaceName == null || interfaceName.length() == 0) {
             throw new IllegalStateException("<dubbo:service interface=\"\" /> interface not allow null!");
         }
+        // 这里去获取一些基础的配置值
+        // dubbo.properties 中的配置， 就是在这里取用到了
         checkDefault();
         if (provider != null) {
             if (application == null) {

@@ -142,6 +142,7 @@ public abstract class AbstractConfig implements Serializable {
                                     value = ConfigUtils.getProperty(prefix + config.getId() + "." + property);
                                 }
                                 if (value == null || value.length() == 0) {
+                                    // 这里是去 dubbo.properties 中取值
                                     value = ConfigUtils.getProperty(prefix + property);
                                 }
                                 if (value == null || value.length() == 0) {
@@ -154,6 +155,8 @@ public abstract class AbstractConfig implements Serializable {
                             }
                         }
                     }
+
+                    // 如果有值 调用set 方法，把 值给塞进去
                     if (value != null && value.length() > 0) {
                         method.invoke(config, new Object[]{convertPrimitive(method.getParameterTypes()[0], value)});
                     }
