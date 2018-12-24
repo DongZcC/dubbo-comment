@@ -69,6 +69,8 @@ public class DubboProtocol extends AbstractProtocol {
     //consumer side export a stub service for dispatching event
     //servicekey-stubmethods
     private final ConcurrentMap<String, String> stubServiceMethodsMap = new ConcurrentHashMap<String, String>();
+
+    // 最终处理的Handler 类 在这边； ExchangeHandler
     private ExchangeHandler requestHandler = new ExchangeHandlerAdapter() {
 
         public Object reply(ExchangeChannel channel, Object message) throws RemotingException {
@@ -252,6 +254,7 @@ public class DubboProtocol extends AbstractProtocol {
         if (isServer) {
             ExchangeServer server = serverMap.get(key);
             if (server == null) {
+                // 新建server
                 serverMap.put(key, createServer(url));
             } else {
                 // server supports reset, use together with override
@@ -324,6 +327,8 @@ public class DubboProtocol extends AbstractProtocol {
     public <T> Invoker<T> refer(Class<T> serviceType, URL url) throws RpcException {
         optimizeSerialization(url);
         // create rpc invoker.
+        // 每一个引用到的外部服务 都会新建一个 Invoker 与其对应.
+        // 同时创建与服务端的连接
         DubboInvoker<T> invoker = new DubboInvoker<T>(serviceType, url, getClients(url), invokers);
         invokers.add(invoker);
         return invoker;

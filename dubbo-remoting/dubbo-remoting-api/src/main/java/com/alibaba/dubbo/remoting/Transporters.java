@@ -72,6 +72,7 @@ public class Transporters {
         } else {
             handler = new ChannelHandlerDispatcher(handlers);
         }
+        // 获取Transporter 默认netty
         return getTransporter().connect(url, handler);
     }
 
