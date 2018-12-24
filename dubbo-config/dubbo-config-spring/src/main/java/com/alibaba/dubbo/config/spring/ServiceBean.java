@@ -81,6 +81,7 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
         if (applicationContext != null) {
             SPRING_CONTEXT = applicationContext;
             try {
+                // ServiceBean 的 setApplicationContext 方法会检测 Spring 容器是否支持 ApplicationListener。若支持，则将 supportedApplicationListener 置为 true
                 Method method = applicationContext.getClass().getMethod("addApplicationListener", new Class<?>[]{ApplicationListener.class}); // backward compatibility to spring 2.0.1
                 method.invoke(applicationContext, new Object[]{this});
                 supportedApplicationListener = true;
@@ -125,11 +126,15 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
     }
 
     private boolean isDelay() {
+        // 获取 delay
         Integer delay = getDelay();
         ProviderConfig provider = getProvider();
         if (delay == null && provider != null) {
+            // 如果前面获取的 delay 为空，这里继续获取
             delay = provider.getDelay();
         }
+        // 判断 delay 是否为空，或者等于 -1
+        // supportedApplicationListener  该变量用于表示当前的 Spring 容器是否支持 ApplicationListener，这个值初始为 false
         return supportedApplicationListener && (delay == null || delay == -1);
     }
 
