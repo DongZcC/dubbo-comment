@@ -28,6 +28,7 @@ import org.junit.Test;
 
 /**
  * CacheTest
+ * 测试 Dubbo 缓存 Cache ; 当服务引用端开启缓存后; 默认有1000 的LRUcache ；
  */
 public class CacheTest extends TestCase {
 
@@ -44,7 +45,9 @@ public class CacheTest extends TestCase {
             ReferenceConfig<CacheService> reference = new ReferenceConfig<CacheService>();
             reference.setApplication(new ApplicationConfig("cache-consumer"));
             reference.setInterface(CacheService.class);
-            reference.setUrl("dubbo://127.0.0.1:29582?scope=remote&cache=true");
+            reference.setCache("true");
+//            reference.setUrl("dubbo://127.0.0.1:29582?scope=remote&cache=true");
+            reference.setUrl("dubbo://127.0.0.1:29582?scope=remote");
             CacheService cacheService = reference.get();
             try {
                 // verify cache, same result is returned for multiple invocations (in fact, the return value increases
@@ -76,6 +79,58 @@ public class CacheTest extends TestCase {
         } finally {
             service.unexport();
         }
+    }
+
+    @Test
+    public void testCacheInJvm() throws Exception {
+        ServiceConfig<CacheService> service = new ServiceConfig<CacheService>();
+        service.setApplication(new ApplicationConfig("cache-provider"));
+        service.setRegistry(new RegistryConfig("N/A"));
+        service.setProtocol(new ProtocolConfig("dubbo", 29582));
+        service.setInterface(CacheService.class.getName());
+        service.setRef(new CacheServiceImpl());
+        service.export();
+
+        try {
+            ReferenceConfig<CacheService> reference = new ReferenceConfig<CacheService>();
+            reference.setApplication(new ApplicationConfig("cache-consumer"));
+            reference.setInterface(CacheService.class);
+            reference.setCache("true");
+            reference.setScope("local");
+            reference.setUrl("dubbo://127.0.0.1:29582");
+            CacheService cacheService = reference.get();
+            try {
+                // verify cache, same result is returned for multiple invocations (in fact, the return value increases
+                // on every invocation on the server side)
+                String fix = null;
+                for (int i = 0; i < 3; i++) {
+                    String result = cacheService.findCache("0");
+                    Assert.assertTrue(fix == null || fix.equals(result));
+                    fix = result;
+                    Thread.sleep(100);
+                }
+
+                // default cache.size is 1000 for LRU, should have cache expired if invoke more than 1001 times
+                for (int n = 0; n < 1001; n++) {
+                    String pre = null;
+                    for (int i = 0; i < 10; i++) {
+                        String result = cacheService.findCache(String.valueOf(n));
+                        Assert.assertTrue(pre == null || pre.equals(result));
+                        pre = result;
+                    }
+                }
+
+                // verify if the first cache item is expired in LRU cache
+                String result = cacheService.findCache("0");
+                Assert.assertFalse(fix == null || fix.equals(result));
+            } finally {
+                reference.destroy();
+            }
+        } finally {
+            service.unexport();
+        }
+
+
     }
 
 }

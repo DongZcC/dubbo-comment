@@ -48,12 +48,13 @@ public class ReferenceConfigTest {
         rc.setApplication(application);
         rc.setRegistry(registry);
         rc.setInterface(DemoService.class.getName());
-        rc.setInjvm(false);
-
+//        rc.setInjvm(true);
+//        rc.setScope("remote");
+        rc.setScope("local");
         try {
             demoService.export();
             rc.get();
-            Assert.assertTrue(!Constants.LOCAL_PROTOCOL.equalsIgnoreCase(
+            Assert.assertTrue(Constants.LOCAL_PROTOCOL.equalsIgnoreCase(
                     rc.getInvoker().getUrl().getProtocol()));
         } finally {
             demoService.unexport();
